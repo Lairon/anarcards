@@ -1,0 +1,26 @@
+material blinn2
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0.388235 0.193116 0.0411073 1
+			specular 0.5 0.5 0.5 89.6
+			emissive 0 0 0
+		}
+	}
+}
+material blinn3
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0.639782 0.729412 0.429066 1
+			specular 0.5 0.5 0.5 89.6
+			emissive 0 0 0
+		}
+	}
+}
