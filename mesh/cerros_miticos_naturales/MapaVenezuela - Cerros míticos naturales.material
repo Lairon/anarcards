@@ -1,0 +1,29 @@
+material lambert1
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0.641382 0.641382 0.641382 0.986206
+			specular 0 0 0 1
+			emissive 0 0 0
+
+			scene_blend alpha_blend
+			depth_write off
+		}
+	}
+}
+material lambert2
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0 0.565411 1 1
+			specular 0 0 0 1
+			emissive 0 0 0
+		}
+	}
+}
