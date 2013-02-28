@@ -7,7 +7,7 @@ int main(int argc, char* argv[]){
 	SoundManager* soundMgr = SoundManager::createManager();
 	std::cout << soundMgr->listAvailableDevices();
 	std::cout<<soundMgr->init();
-	soundMgr->setAudioPath( (char*) "../sounds/" );
+	//soundMgr->setAudioPath( (char*) "../sounds/" );
 	unsigned int audioId;
 	// We loop to be able to test the pause function
 	if(!soundMgr->loadAudio( file, &audioId, true)){

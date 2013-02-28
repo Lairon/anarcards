@@ -37,17 +37,15 @@ bool init(OgreARAppLogic* owner)
 {
 
 	// read input video  
-	if (TheInputVideo=="live") TheVideoCapturer.open(0);
-	else TheVideoCapturer.open(TheInputVideo);
-	if (!TheVideoCapturer.isOpened())
-	{
+	TheVideoCapturer.open(0);
+	if (!TheVideoCapturer.isOpened()){
 		cerr<<"Could not open video"<<endl;
 		return false;
 	}
 
 	// read intrinsic file
 	try {
-		CameraParams.readFromXMLFile(TheInputCameraFile);
+		CameraParams.readFromXMLFile("intrinsics.yml");
 	} catch (std::exception &ex) {
 		cout<<ex.what()<<endl;
 		return false;
@@ -227,7 +225,7 @@ bool update(OgreARAppLogic* owner)
 void usage()
 {
 	cout<<" This program test Ogre version of ArUco (single version) \n\n";
-	cout<<" Usage <video.avi>|live <camera.yml> <markersize>"<<endl;
+	cout<<" Usage <markersize>"<<endl;
 	cout<<" <video.avi>|live: specifies a input video file. Use 'live' to capture from camera"<<endl;
 	cout<<" <camera.yml>: camera calibration file"<<endl;
 	cout<<" <markersize>: in meters "<<endl;
@@ -236,10 +234,8 @@ void usage()
 
 bool readArguments ( int argc,char **argv )
 {
-	if (argc!=4) return false;
-	TheInputVideo=argv[1];
-	TheInputCameraFile=argv[2];
-	TheMarkerSize=atof(argv[3]);
+	if (argc!=2) return false;
+	TheMarkerSize=atof(argv[1]);
 	return true;
 }
 

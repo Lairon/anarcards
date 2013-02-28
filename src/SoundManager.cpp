@@ -268,12 +268,10 @@ bool SoundManager::checkALError(std::string pMsg){
 
 bool SoundManager::loadAudio(std::string filename, unsigned int *audioId, bool loop){
 	if(filename.empty() || filename.length() > MAX_FILENAME_LENGTH){
-		std::cout<<"1load\n";
 		return false;
 	}
 
 	if(mAudioSourcesInUseCount == MAX_AUDIO_SOURCES){
-		std::cout<<"2load\n";
 		return false; //out of audio slots
 	}
 
@@ -286,7 +284,6 @@ bool SoundManager::loadAudio(std::string filename, unsigned int *audioId, bool l
 		//the file isn't loaded, attempt to load it
 		bufferID = loadAudioInToSystem(filename);
 		if(bufferID<0){
-		std::cout<<"3load\n";
 			return false; //failed
 		}
 	}
@@ -309,7 +306,6 @@ bool SoundManager::loadAudio(std::string filename, unsigned int *audioId, bool l
 	alSourcei(mAudioSources[sourceID],AL_LOOPING,loop);
 
 	if( checkALError( "loadSource()::alSourcei" )){
-		std::cout<<"4load\n";
 		return false;
 	}
 
@@ -335,13 +331,11 @@ int SoundManager::locateAudioBuffer(std::string filename){
 
 int SoundManager::loadAudioInToSystem(std::string filename){
 	if(filename.empty()){
-		std::cout<<"-1sys";
 		return -1;
 	}
 
 	//Make sure we have audio buffers available
 	if (mAudioBuffersInUseCount == MAX_AUDIO_BUFFERS){
-		std::cout<<"-2sys";
 		return -1;
 	}
 
@@ -354,13 +348,14 @@ int SoundManager::loadAudioInToSystem(std::string filename){
 	}
 
 	//load .wav, .ogg, or .au
-
+	std::string fullFileName = mAudioPath+filename;
 	if(filename.find(".ogg",0) != std::string::npos){
 		printf("---> found ogg\n");
-		if (!loadOGG(filename,mAudioBuffers[bufferID])){
-			std::cout<<"-3sys";
+		if (!loadOGG(fullFileName,mAudioBuffers[bufferID])){
 			return -1;
 		}
+	}else{
+		return -1;//format not supported
 	}
 
 	//succesful load of the file
@@ -732,7 +727,6 @@ bool SoundManager::loadOGG( std::string filename, ALuint pDestAudioBuffer ){
 		}
 	}
 
-	std::cout<<pDestAudioBuffer<<","<<format<<','<<&samples[0]<<','<<ov_pcm_total(&oggfile,-1)<<','<<info->rate;;
 	alBufferData(pDestAudioBuffer, format, data, size, info->rate);
 	checkALError("asda");
 	free(data);

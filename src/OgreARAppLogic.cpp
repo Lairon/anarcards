@@ -47,8 +47,10 @@ bool OgreARAppLogic::init(void)
 
 	createCameraBackground();
 	
-	mApplication->getKeyboard()->setEventCallback(&mOISListener);
-	mApplication->getMouse()->setEventCallback(&mOISListener);
+	/*
+	 *mApplication->getKeyboard()->setEventCallback(&mOISListener);
+	 *mApplication->getMouse()->setEventCallback(&mOISListener);
+	 */
 	
 	return true;
 }
