@@ -343,7 +343,7 @@ int SoundManager::loadAudioInToSystem(std::string filename){
 
 	int bufferID = 0;
 
-	while (mAudioBuffersInUse[bufferID] == true) {
+	while (mAudioBuffersInUse[bufferID]) {
 		bufferID++;
 	}
 
@@ -359,7 +359,7 @@ int SoundManager::loadAudioInToSystem(std::string filename){
 	}
 
 	//succesful load of the file
-	mAudioSourceInUse[bufferID] = true; //mark as in use
+	mAudioBuffersInUse[bufferID] = true; //mark as in use
 
 	strcpy(mAudioBufferFileName[bufferID],filename.c_str());
 
@@ -524,8 +524,8 @@ bool SoundManager::releaseAudio( unsigned int audioID ){
 }
 
 /****************************************************************************/
-bool SoundManager::setSound( unsigned int audioID, Vector3 position,
-		Vector3 velocity, Vector3 direction, float maxDistance,
+bool SoundManager::setSound( unsigned int audioID, Ogre::Vector3 position,
+		Ogre::Vector3 velocity, Ogre::Vector3 direction, float maxDistance,
 		bool playNow, bool forceRestart, float minGain ) {
 	if ( audioID >= MAX_AUDIO_SOURCES || !mAudioSourceInUse[ audioID ] )
 		return false;
@@ -573,7 +573,7 @@ bool SoundManager::setSound( unsigned int audioID, Vector3 position,
 }
 
 /****************************************************************************/
-bool SoundManager::setSoundPosition( unsigned int audioID, Vector3 position ){
+bool SoundManager::setSoundPosition( unsigned int audioID, Ogre::Vector3 position ){
 	if ( audioID >= MAX_AUDIO_SOURCES || !mAudioSourceInUse[ audioID ] )
 		return false;
 
@@ -589,8 +589,8 @@ bool SoundManager::setSoundPosition( unsigned int audioID, Vector3 position ){
 }
 
 /****************************************************************************/
-bool SoundManager::setSoundPosition( unsigned int audioID, Vector3 position,
-		Vector3 velocity, Vector3 direction ) {
+bool SoundManager::setSoundPosition( unsigned int audioID, Ogre::Vector3 position,
+		Ogre::Vector3 velocity, Ogre::Vector3 direction ) {
 	if ( audioID >= MAX_AUDIO_SOURCES || !mAudioSourceInUse[ audioID ] )
 		return false;
 
@@ -622,9 +622,9 @@ bool SoundManager::setSoundPosition( unsigned int audioID, Vector3 position,
 }
 
 /****************************************************************************/
-bool SoundManager::setListenerPosition( Vector3 position, Vector3 velocity,
-		Quaternion orientation ){
-	Vector3 axis;
+bool SoundManager::setListenerPosition( Ogre::Vector3 position, Ogre::Vector3 velocity,
+		Ogre::Quaternion orientation ){
+	Ogre::Vector3 axis;
 
 	// Set the position
 	ALfloat pos[] = { position.x, position.y, position.z };
@@ -643,7 +643,7 @@ bool SoundManager::setListenerPosition( Vector3 position, Vector3 velocity,
 		return false;
 
 	// Orientation of the listener : look at then look up
-	axis = Vector3::ZERO;
+	axis = Ogre::Vector3::ZERO;
 	axis.x = orientation.getYaw().valueRadians();
 	axis.y = orientation.getPitch().valueRadians();
 	axis.z = orientation.getRoll().valueRadians();
@@ -700,7 +700,7 @@ bool SoundManager::loadOGG( std::string filename, ALuint pDestAudioBuffer ){
 			format = 0; break;
 	}
 
-	std::vector<int16> samples;
+	std::vector<Ogre::int16> samples;
 	unsigned size = ov_pcm_total(&oggfile,-1)*info->channels*2;
 	char * data = (char*) malloc(size);
 	char* dataptr = data;
@@ -726,7 +726,6 @@ bool SoundManager::loadOGG( std::string filename, ALuint pDestAudioBuffer ){
 			}
 		}
 	}
-
 	alBufferData(pDestAudioBuffer, format, data, size, info->rate);
 	checkALError("asda");
 	free(data);

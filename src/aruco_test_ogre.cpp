@@ -3,6 +3,10 @@
 
 #include "OgreApp.h"
 #include "OgreARAppLogic.h"
+#include "SoundManager.h"
+
+#include <map>
+#include "Card.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -28,10 +32,34 @@ float TheMarkerSize=1;
 #define MAX_OBJECTS 7
 Ogre::Entity* ogreEntity[MAX_OBJECTS][5];
 Ogre::SceneNode* ogreNode[MAX_OBJECTS][5];
-const float scale = 0.00675f;
 Ogre::AnimationState *baseAnim[MAX_OBJECTS], *topAnim[MAX_OBJECTS];
 
+std::map<int,Card*> cards;
 
+// Sound variables
+
+SoundManager* soundMgr;
+unsigned bgm;
+
+//Load card config file
+bool loadCards(){
+	FILE* cardFile = fopen("cards.cfg","r");
+	if(cardFile==NULL){
+		return false;
+		
+	}
+	unsigned cardID;
+	char cardName[50];
+	while(1){
+		if(fscanf(cardFile, "%d %s",&cardID,cardName)==EOF){
+			break;
+		}
+		Card* card = new Card(cardID,string(cardName));
+		cards[cardID]=card;
+	}
+	fclose(cardFile);
+	return true;
+}
 
 bool init(OgreARAppLogic* owner)
 {
@@ -79,47 +107,72 @@ bool init(OgreARAppLogic* owner)
 	owner->setImageSize(TheInputImageUnd.cols, TheInputImageUnd.rows);
 	owner->setImageBuffer(TheInputImageUnd.ptr<unsigned char>(0)); // TheInputImageUnd will be shown as background
 
+	//SOUNDS
+	soundMgr = SoundManager::createManager();
+	std::cout << soundMgr->listAvailableDevices();
+	std::cout<<soundMgr->init();
+	soundMgr->setAudioPath("../sounds/");
 
+	//BGM
+	soundMgr->loadAudio("Julio D' Escrivan - bebe.ogg",&bgm,true);
+
+	loadCards();
 	// Init Ogre scene
-	for(unsigned int i=0; i<MAX_OBJECTS; i++) {
-		std::stringstream SU; SU << "su"<<i;
-		std::stringstream MAP; MAP << "map"<<i;
-		std::stringstream D3; D3 << "3d"<<i;
-		std::stringstream INFO; INFO << "info"<<i;
-		std::stringstream MESH; MESH << "mesh"<<i;
-
-		ogreEntity[i][0] = owner->mSceneMgr->createEntity(SU.str(), "superficieretiro.mesh");
-		ogreEntity[i][1] = owner->mSceneMgr->createEntity(MAP.str(), "letrasmapa.mesh");
-		ogreEntity[i][2] = owner->mSceneMgr->createEntity(D3.str(), "letras3d.mesh");
-		ogreEntity[i][3] = owner->mSceneMgr->createEntity(INFO.str(), "letrasinfo.mesh");
-		ogreEntity[i][4] = owner->mSceneMgr->createEntity(MESH.str(), "cube.mesh");
+	map<int,Card*>::iterator it;
+	for(it = cards.begin();it!=cards.end();it++){
+		Card* card = it->second;
+		int id = card->id;
+		std::string name = card->name;
+		std::stringstream tmpstr;
+		std::stringstream tmpstr2;
 
 
-		for(unsigned int j=0; j<5; j++){
-			ogreNode[i][j] = owner->mSceneMgr->getRootSceneNode()->createChildSceneNode();
-			ogreNode[i][j]->attachObject(ogreEntity[i][j]);
-			ogreNode[i][j]->setScale(scale, scale, scale);
-			if(j<4)
-				ogreNode[i][j]->scale(12,12,12);
-			ogreNode[i][j]->setVisible(false);
+		tmpstr << "surface"<<id;
+		card->surface = owner->mSceneMgr->createEntity(tmpstr.str(),"common/superficieretiro.mesh");
+
+		tmpstr.str("");
+		tmpstr << "textmap"<<id;
+		card->textMap = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasmapa.mesh");
+
+		tmpstr.str("");
+		tmpstr << "text3d"<<id;
+		card->text3D = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letras3d.mesh");
+
+		tmpstr.str("");
+		tmpstr << "textInfo"<<id;
+		card->textInfo = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasinfo.mesh");
+
+		/*no se cual de los dos maps es
+		 *tmpstr.str("");
+		 *tmpstr << "map"<<id;
+		 *tmpstr2 << name<<"/"<<name<<"_map.mesh";
+		 *card->surface = owner->mSceneMgr->createEntity(tmpstr.str(),"common/superficieretiro.mesh");i
+		 */
+
+		tmpstr.str("");
+		tmpstr << "model"<<id;
+		tmpstr2 << name<<"/"<<name<<".mesh";
+		card->model = owner->mSceneMgr->createEntity(tmpstr.str(),tmpstr2.str());
+
+		//Assigning Ogrenode
+		card->node = owner->mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		card->attachObjects();
+		card->node->setVisible(false);
+
+		//Card especific sounds
+		tmpstr.str("");
+		tmpstr << name<<".ogg";
+		if(!soundMgr->loadAudio(tmpstr.str(), &card->soundInfoID, false)){
+			soundMgr->checkALError("load");
+		}
+		tmpstr.str("");
+		tmpstr << name<<"_mapa.ogg";
+		cout <<tmpstr.str();
+		if(!soundMgr->loadAudio(tmpstr.str(), &card->soundMapID, false)){
+			soundMgr->checkALError("load");
 		}
 
-
-		/*ogreEntity[i][1] = owner->mSceneMgr->createEntity(EN.str(), "letrasmapa.mesh");
-		  ogreNode[i][1] = owner->mSceneMgr->getRootSceneNode()->createChildSceneNode();
-		  ogreNode[i][1]->attachObject(ogreEntity[i]);
-		  ogreNode[i][1]->setScale(scale, scale, scale);
-		  ogreNode[i][1]->setVisible(false);
-
-		  Init animation
-		  ogreEntity[i][0]->getSkeleton()->setBlendMode(Ogre::ANIMBLEND_CUMULATIVE);
-		  baseAnim[i] = ogreEntity[i][0]->getAnimationState("RunBase");
-		  topAnim[i] = ogreEntity[i][0]->getAnimationState("Dance");
-		  baseAnim[i]->setLoop(true);
-		  topAnim[i]->setLoop(true);
-		  baseAnim[i]->setEnabled(true);
-		  topAnim[i]->setEnabled(true);*/
-	}   
+	}
 
 	//  correct initialization
 	return true;
@@ -130,6 +183,7 @@ bool init(OgreARAppLogic* owner)
 bool update(OgreARAppLogic* owner)
 {
 
+	soundMgr->playAudio(bgm,false);
 	// capture a frame
 	if (TheVideoCapturer.grab())//¿Hay alguna imagen para procesar?
 	{
@@ -144,9 +198,6 @@ bool update(OgreARAppLogic* owner)
 		// set object poses
 		for(unsigned int i=0; i<MAX_OBJECTS; i++) {
 
-			std::stringstream d3path; d3path << "../mesh/3d/";
-			std::stringstream mapath; mapath << "../mesh/map/";
-			std::stringstream infopath; infopath << "../mesh/info/";
 
 			if(i<TheMarkers.size()) { 
 				double position[3], orientation[4];
