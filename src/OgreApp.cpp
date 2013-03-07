@@ -46,7 +46,7 @@ bool OgreApp::init(void)
 
 	mRoot = new Ogre::Root("plugins.cfg", "ogre.cfg", "Ogre.log");
 
-	if(!mRoot->showConfigDialog())
+	if(!(mRoot->restoreConfig() || mRoot->showConfigDialog()))
 		return false;
 
 	mWindow = mRoot->initialise(true);
@@ -209,10 +209,17 @@ void OgreApp::createInputDevices(bool exclusive)
 
 	if(!exclusive)
 	{
+#if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
 		pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_FOREGROUND" )));
 		pl.insert(std::make_pair(std::string("w32_mouse"), std::string("DISCL_NONEXCLUSIVE")));
 		pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_FOREGROUND")));
 		pl.insert(std::make_pair(std::string("w32_keyboard"), std::string("DISCL_NONEXCLUSIVE")));
+#else
+		pl.insert(std::make_pair(std::string("x11_mouse_grab"), std::string("false")));
+		pl.insert(std::make_pair(std::string("x11_mouse_hide"), std::string("false")));
+		pl.insert(std::make_pair(std::string("x11_keyboard_grab"), std::string("false")));
+		pl.insert(std::make_pair(std::string("XAutoRepeatOn"), std::string("true")));
+#endif
 	}
 
 	mInputMgr = OIS::InputManager::createInputSystem(pl);

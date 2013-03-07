@@ -35,21 +35,23 @@ bool OgreARAppLogic::preInit(const Ogre::StringVector &commandArgs)
 bool OgreARAppLogic::init(void)
 {	
 	pause = false;
-	
+
 	//INIT OGRE
 	createSceneManager();
 	createViewport();
 	createCamera();
 	createScene();
-	
+
 	//INIT AR
 	if( !initAR() ) return false;
 
 	createCameraBackground();
-	
-	mApplication->getKeyboard()->setEventCallback(&mOISListener);
-	mApplication->getMouse()->setEventCallback(&mOISListener);
-	
+
+	/*
+	 *mApplication->getKeyboard()->setEventCallback(&mOISListener);
+	 *mApplication->getMouse()->setEventCallback(&mOISListener);
+	 */
+
 	return true;
 }
 
@@ -61,17 +63,17 @@ bool OgreARAppLogic::preUpdate(Ogre::Real deltaTime)
 bool OgreARAppLogic::update(Ogre::Real deltaTime)
 {
 	if (!pause) {
-	  if( !userUpdate(this)) return false; // call user-defined funcions
-	  
-	  // update background image
-	  if (!mTexture.isNull())
-	  {
-	      //Pedimos a ogre que actualice la imagen desde el PixelBox
-	      Ogre::HardwarePixelBufferSharedPtr pixelBuffer = mTexture->getBuffer();
-	      pixelBuffer->blitFromMemory(mPixelBox);
-	  }	  	  
+		if( !userUpdate(this)) return false; // call user-defined funcions
+
+		// update background image
+		if (!mTexture.isNull())
+		{
+			//Pedimos a ogre que actualice la imagen desde el PixelBox
+			Ogre::HardwarePixelBufferSharedPtr pixelBuffer = mTexture->getBuffer();
+			pixelBuffer->blitFromMemory(mPixelBox);
+		}	  	  
 	}
-	
+
 	bool result = processInputs(deltaTime);
 	return result;
 }
@@ -121,10 +123,10 @@ void OgreARAppLogic::createCamera(void)
 
 void OgreARAppLogic::createScene(void)
 {
-      // just create a light. The scene should be initialized in user-defined function
-      Ogre::Light *L = mSceneMgr->createLight("L");
-      L->setPosition(0, 1, -10);
-      mSceneMgr->getRootSceneNode()->attachObject(L);
+	// just create a light. The scene should be initialized in user-defined function
+	Ogre::Light *L = mSceneMgr->createLight("L");
+	L->setPosition(0, 1, -10);
+	mSceneMgr->getRootSceneNode()->attachObject(L);
 
 }
 
@@ -134,22 +136,22 @@ bool OgreARAppLogic::initAR()
 	//INIT Realidad aumentada
 	if ( !userInit(this) ) return false; // user defined function to init AR
 	if(mWidth==0 || mHeight==0 || mBuffer==0) {
-	  std::cout << "Image size or buffer not defined in user-defined init function" << std::endl;
-	  return false;
+		std::cout << "Image size or buffer not defined in user-defined init function" << std::endl;
+		return false;
 	}
-	
+
 	// create background texture
 	mPixelBox = Ogre::PixelBox(mWidth, mHeight, 1, Ogre::PF_R8G8B8, mBuffer);
 	// Create Texture
 	mTexture = Ogre::TextureManager::getSingleton().createManual(
-		      "CameraTexture",
-		      Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-		      Ogre::TEX_TYPE_2D,
-		      mWidth,
-		      mHeight,
-		      0,
-		      Ogre::PF_R8G8B8,
-		      Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);	
+			"CameraTexture",
+			Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+			Ogre::TEX_TYPE_2D,
+			mWidth,
+			mHeight,
+			0,
+			Ogre::PF_R8G8B8,
+			Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);	
 
 	//Create Camera Material
 	MaterialPtr material = MaterialManager::getSingleton().create("CameraMaterial", ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
@@ -194,16 +196,16 @@ void OgreARAppLogic::createCameraBackground()
 	Rectangle2D* rect = new Rectangle2D(true);
 	rect->setCorners(-1.0, 1.0, 1.0, -1.0);
 	rect->setMaterial("CameraMaterial");
- 
+
 	// Render the background before everything else
 	rect->setRenderQueueGroup(RENDER_QUEUE_BACKGROUND);
- 
+
 	// Hacky, but we need to set the bounding box to something big
 	// Use infinite AAB to always stay visible
 	AxisAlignedBox aabInf;
 	aabInf.setInfinite();
 	rect->setBoundingBox(aabInf);
- 
+
 	// Attach background to the scene
 	SceneNode* node = mSceneMgr->getRootSceneNode()->createChildSceneNode("Background");
 	node->attachObject(rect);
@@ -212,20 +214,20 @@ void OgreARAppLogic::createCameraBackground()
 
 
 void OgreARAppLogic::setUserFunctions(bool (*init)(OgreARAppLogic*), bool (*update)(OgreARAppLogic*)) {
-  userInit = init;
-  userUpdate = update;
+	userInit = init;
+	userUpdate = update;
 }
 
 void OgreARAppLogic::setImageSize(int width, int height)
 {
-  mWidth = width;
-  mHeight = height;
+	mWidth = width;
+	mHeight = height;
 }
 
 
 void OgreARAppLogic::setImageBuffer(unsigned char* buffer)
 {
-  mBuffer = buffer;
+	mBuffer = buffer;
 }
 
 
@@ -242,8 +244,8 @@ bool OgreARAppLogic::processInputs(Ogre::Real deltaTime)
 	}
 	if(keyboard->isKeyDown(OIS::KC_SPACE))
 	{
-	  pause = !pause;
-	  
+		pause = !pause;
+
 	}
 	return true;
 }
