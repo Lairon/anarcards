@@ -5,6 +5,7 @@ class Card{
 	public:
 		int id;
 		std::string name;
+		bool hasMap;
 
 		/*Ogre variables*/
 		Ogre::SceneNode* node;
@@ -19,7 +20,8 @@ class Card{
 		unsigned soundInfoID;
 		unsigned soundMapID;
 
-		Card(unsigned cardID, std::string name);
+		Card():id(-1){};
+		Card(unsigned cardID, std::string name,bool hasMap);
 
 		void attachObjects();
 		

@@ -8,16 +8,13 @@ OBJ = $(SRC:.cpp=.o)
 
 
 # Library and includes
-FLAGS = $(shell pkg-config opencv OGRE OIS ogg openal vorbisfile vorbis --cflags --libs) -ggdb
+FLAGS = $(shell pkg-config opencv OGRE OIS ogg openal vorbisfile vorbis --cflags --libs) -Wall -O2
 
 # Suffixes
 .SUFFIXES: .cpp
 
-arucocards: aruco_test_ogre.o libaruco_ogre.a SoundManager.o Card.o
-	$(CC) $(OBJ) $^ -l:libaruco.so.1.2.4 -laruco_ogre -lOgreMain -lOIS $(FLAGS) -o arucocards
-
-aruco_test_ogre.o: aruco_test_ogre.cpp
-	$(CC) $(FLAGS) -c aruco_test_ogre.cpp
+anarcards: main.cpp libaruco_ogre.a SoundManager.o Card.o
+	$(CC) $(OBJ) $^ -l:libaruco.so.1.2.4 -laruco_ogre -lOgreMain -lOIS $(FLAGS) -o $@
 
 .cpp.o:
 	$(CC) $(FLAGS) -c $< -o $@
