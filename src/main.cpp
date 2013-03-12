@@ -25,37 +25,39 @@ cv::Mat TheInputImage, TheInputImageUnd;
 aruco::CameraParameters CameraParams, CameraParamsUnd;
 aruco::MarkerDetector MDetector;
 vector<aruco::Marker> TheMarkers;
-float TheMarkerSize=1;
+float TheMarkerSize=0.07; //Tama�o de la marca
 
 
 // Ogre scene variables
-#define MAX_OBJECTS 7
-Ogre::Entity* ogreEntity[MAX_OBJECTS][5];
-Ogre::SceneNode* ogreNode[MAX_OBJECTS][5];
-Ogre::AnimationState *baseAnim[MAX_OBJECTS], *topAnim[MAX_OBJECTS];
-
 std::map<int,Card*> cards;
 
 // Sound variables
 
 SoundManager* soundMgr;
 unsigned bgm;
+unsigned currentSound;
 
 //Load card config file
 bool loadCards(){
 	FILE* cardFile = fopen("cards.cfg","r");
 	if(cardFile==NULL){
 		return false;
-		
+
 	}
 	unsigned cardID;
 	char cardName[50];
+	char line[100];
+	int hasMap;
 	while(1){
-		if(fscanf(cardFile, "%d %s",&cardID,cardName)==EOF){
+		if(fgets(line,100,cardFile)==NULL){
 			break;
 		}
-		Card* card = new Card(cardID,string(cardName));
-		cards[cardID]=card;
+		std::cout<<line;
+		sscanf(line, "%s %d %d",cardName,&cardID,&hasMap);
+		if(cardName[0]!='#'){
+			Card* card = new Card(cardID,string(cardName),bool(hasMap));
+			cards[cardID]=card;
+		}
 	}
 	fclose(cardFile);
 	return true;
@@ -142,12 +144,12 @@ bool init(OgreARAppLogic* owner)
 		tmpstr << "textInfo"<<id;
 		card->textInfo = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasinfo.mesh");
 
-		/*no se cual de los dos maps es
-		 *tmpstr.str("");
-		 *tmpstr << "map"<<id;
-		 *tmpstr2 << name<<"/"<<name<<"_map.mesh";
-		 *card->surface = owner->mSceneMgr->createEntity(tmpstr.str(),"common/superficieretiro.mesh");i
-		 */
+		if(card->hasMap){
+			tmpstr.str("");
+			tmpstr << "map"<<id;
+			tmpstr2 << name<<"/"<<name<<"_map.mesh";
+			card->surface = owner->mSceneMgr->createEntity(tmpstr.str(),tmpstr2.str());
+		}
 
 		tmpstr.str("");
 		tmpstr << "model"<<id;
@@ -156,6 +158,7 @@ bool init(OgreARAppLogic* owner)
 
 		//Assigning Ogrenode
 		card->node = owner->mSceneMgr->getRootSceneNode()->createChildSceneNode();
+		card->node->setScale(scale,scale,scale);
 		card->attachObjects();
 		card->node->setVisible(false);
 
@@ -176,18 +179,13 @@ bool init(OgreARAppLogic* owner)
 
 	//  correct initialization
 	return true;
-
-
 }
 
-bool update(OgreARAppLogic* owner)
-{
+bool update(OgreARAppLogic* owner){
 
 	soundMgr->playAudio(bgm,false);
 	// capture a frame
-	if (TheVideoCapturer.grab())//¿Hay alguna imagen para procesar?
-	{
-
+	if (TheVideoCapturer.grab()){//¿Hay alguna imagen para procesar?
 		// undistort image
 		TheVideoCapturer.retrieve ( TheInputImage );
 		cv::undistort(TheInputImage,TheInputImageUnd,CameraParams.CameraMatrix,CameraParams.Distorsion);
@@ -195,99 +193,66 @@ bool update(OgreARAppLogic* owner)
 		// detect markers
 		MDetector.detect(TheInputImageUnd,TheMarkers,CameraParamsUnd,TheMarkerSize);
 
-		// set object poses
-		for(unsigned int i=0; i<MAX_OBJECTS; i++) {
-
-
-			if(i<TheMarkers.size()) { 
-				double position[3], orientation[4];
-				TheMarkers[i].OgreGetPoseParameters(position, orientation);
-
-				double yaw = atan2(2*(orientation[0]*orientation[3]+orientation[2]*orientation[1]),1-2*(pow(orientation[2],2)+pow(orientation[3],2))); 
-
-				cout << "YAW " << yaw << endl;
-
-				for (unsigned int j=0; j<5; j++){
-					ogreNode[i][j]->setVisible(true);
-					ogreNode[i][j]->setPosition( position[0], position[1], position[2]);
-					ogreNode[i][j]->setOrientation( orientation[0], orientation[1], orientation[2], orientation[3]); 
-
-					// Update animation and correct position
-					//baseAnim[i]->addTime(0.08);
-					//topAnim[i]->addTime(0.08);
-
-					Ogre::Real offsety = ogreEntity[i][j]->getBoundingBox().getHalfSize().y;
-					Ogre::Real offsetx = ogreEntity[i][j]->getBoundingBox().getHalfSize().x;
-
-
-					switch(j){
-						case 1:
-							//ogreNode[i][j]->yaw(Ogre::Degree(90));
-							ogreNode[i][j]->translate(-0.25,+offsety*scale,0.9,Ogre::Node::TS_LOCAL);
-							break;
-						case 2:
-							ogreNode[i][j]->yaw(Ogre::Degree(90));
-							ogreNode[i][j]->translate(-0.21,+offsety*scale,1.2,Ogre::Node::TS_LOCAL);
-							break;
-						case 3:
-							ogreNode[i][j]->yaw(Ogre::Degree(-90));
-							ogreNode[i][j]->translate(-0.24,+offsety*scale,1.2,Ogre::Node::TS_LOCAL);
-							break;
-						case 4:
-							if(-0.79>yaw && yaw>-2.36){
-								//3d
-								cout << "3D!!!!" << endl;
-							}else if(2.36<yaw || yaw<-2.36){
-								//mapa
-								cout << "MAPA!!!!" << endl;
-							}else if(0.79<yaw && yaw<2.36){
-								//info
-								cout << "INFO!!!!" << endl;
-							}else if(0.79>yaw && yaw>-0.79){
-								//nada
-								cout << "NADA!!!!" << endl;
-							}
-
-							ogreNode[i][j]->yaw(Ogre::Degree(90));
-							ogreNode[i][j]->translate(0,(+offsety*scale)+0.1,0,Ogre::Node::TS_LOCAL);
-							break;
-						default:
-							ogreNode[i][j]->yaw(Ogre::Degree(90));
-							ogreNode[i][j]->translate(0,+offsety*scale,0,Ogre::Node::TS_LOCAL);
-							break;
-					}
-
-				}
-
-			}else{ 
-				for (unsigned int j=0; j<5; j++){
-					ogreNode[i][j]->setVisible(false);
-				}
+		map<int,Card*>::iterator it;
+		for(it=cards.begin();it!=cards.end();it++){
+			Card* c = it->second;
+			if(c!=NULL){
+				c->node->setVisible(false);
 			}
 		}
 
+
+		// set object poses
+		for(unsigned int i=0; i<TheMarkers.size(); i++) {
+			double position[3], orientation[4];
+			TheMarkers[i].OgreGetPoseParameters(position, orientation);
+
+			//Calcular el angulo de rotacion
+			double yaw = atan2(2*(orientation[0]*orientation[3]+orientation[2]*orientation[1]),1-2*(pow(orientation[2],2)+pow(orientation[3],2))); 
+			Card* card = cards[TheMarkers[i].id];
+			if(card==NULL) continue;
+
+			card->node->setVisible(true);
+			card->node->setPosition(position[0],position[1],position[2]);
+			card->node->setOrientation( orientation[0], orientation[1], orientation[2], orientation[3]); 
+
+			if(-0.79>yaw && yaw>-2.36){
+				//3d
+				cout << "3D!!!!" << endl;
+			}else if(2.36<yaw || yaw<-2.36){
+				//3D info
+				cout << "INFO!!!!" << endl;
+				if(card->map){
+					card->model->setVisible(true);
+					card->map->setVisible(false);
+				}
+				if(currentSound!=card->soundInfoID){
+					soundMgr->stopAudio(currentSound);
+					soundMgr->playAudio(card->soundInfoID,true);
+					currentSound = card->soundInfoID;
+				}
+			}else if(0.79<yaw && yaw<2.36){
+				//mapa
+				if(card->map){
+					card->map->setVisible(true);
+					card->model->setVisible(false);
+				}
+				cout << "MAPA!!!!" << endl;
+			}else if(0.79>yaw && yaw>-0.79){
+				//mapa infonada
+				cout << "MAPAINFO!!!!" << endl;
+				if(currentSound!=card->soundMapID){
+					soundMgr->stopAudio(currentSound);
+					soundMgr->playAudio(card->soundMapID,true);
+					currentSound = card->soundMapID;
+				}
+			}
+		}
 		return true;
+	}else{
+		return false;
 	}
-	else return false;
 
-}
-
-
-void usage()
-{
-	cout<<" This program test Ogre version of ArUco (single version) \n\n";
-	cout<<" Usage <markersize>"<<endl;
-	cout<<" <video.avi>|live: specifies a input video file. Use 'live' to capture from camera"<<endl;
-	cout<<" <camera.yml>: camera calibration file"<<endl;
-	cout<<" <markersize>: in meters "<<endl;
-}
-
-
-bool readArguments ( int argc,char **argv )
-{
-	if (argc!=2) return false;
-	TheMarkerSize=atof(argv[1]);
-	return true;
 }
 
 
@@ -304,15 +269,12 @@ extern "C" {
 		{
 			try
 			{
-				if (!readArguments ( argc,argv )) {
-					usage();
-					return false;
-				}
 				OgreApp app;
 				OgreARAppLogic appLogic;
 				appLogic.setUserFunctions(init, update);
 				app.setAppLogic(&appLogic);
 				app.run();
+				delete soundMgr;
 			}
 			catch (Ogre::Exception& e)
 			{
