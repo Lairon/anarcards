@@ -1,0 +1,26 @@
+material antropomorfa1
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0.901961 0.190897 0.070742 1
+			specular 0 0 0 1
+			emissive 0 0 0
+		}
+	}
+}
+material antropomorfa2
+{
+	technique
+	{
+		pass
+		{
+			ambient 0 0 0 1
+			diffuse 0.341 0.341 0.341 1
+			specular 0 0 0 1
+			emissive 0 0 0
+		}
+	}
+}
