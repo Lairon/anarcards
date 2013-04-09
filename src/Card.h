@@ -15,6 +15,8 @@ class Card{
 		Ogre::Entity* textMap;
 		Ogre::Entity* text3D;
 		Ogre::Entity* textInfo;
+        Ogre::Entity* textInfo2;
+        Ogre::Entity* textMap2;
 
 		/*SoundVariables*/
 		unsigned soundInfoID;

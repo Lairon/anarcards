@@ -25,7 +25,7 @@ cv::Mat TheInputImage, TheInputImageUnd;
 aruco::CameraParameters CameraParams, CameraParamsUnd;
 aruco::MarkerDetector MDetector;
 vector<aruco::Marker> TheMarkers;
-float TheMarkerSize=0.07; //Tamaño de la marca
+float TheMarkerSize=0.05; //Tamaño de la marca
 
 
 // Ogre scene variables
@@ -145,6 +145,14 @@ bool init(OgreARAppLogic* owner)
 		    tmpstr << "textmap"<<id;
 		    card->textMap = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasmapa.mesh");
 
+            tmpstr.str("");
+            tmpstr << "textmap2"<<id;
+            card->textMap2 = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasmapa.mesh");
+
+		    tmpstr.str("");
+		    tmpstr << "textInfo2"<<id;
+		    card->textInfo2 = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasinfo.mesh");
+        
 			tmpstr.str("");
 			tmpstr2.str("");
 			tmpstr << "map"<<id;
@@ -250,6 +258,11 @@ bool update(OgreARAppLogic* owner){
 			}else if(0.79>yaw && yaw>-0.79){
 				//mapa infonada
 				cout << "MAPAINFO!!!!" << endl;
+                if(card->hasMap){
+					card->model->setVisible(false);
+					card->map->setVisible(true);
+				}
+
 				if(currentSound!=card->soundMapID){
 					soundMgr->stopAudio(currentSound);
 					soundMgr->playAudio(card->soundMapID,true);
