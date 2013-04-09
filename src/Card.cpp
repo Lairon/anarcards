@@ -16,19 +16,23 @@ void Card::attachObjects(){
 		tempNode = node->createChildSceneNode();
 		tempNode->attachObject(surface);
 		tempNode->yaw(Ogre::Degree(90));
-		
+		tempNode->pitch(Ogre::Degree(-90));
+		tempNode->setPosition(12,-2,0);
 	}
 
 	if(model!=NULL){ 
 		tempNode = node->createChildSceneNode();
 		tempNode->attachObject(model);
-		tempNode->yaw(Ogre::Degree(90));
+		tempNode->yaw(Ogre::Degree(45));
+        tempNode->pitch(Ogre::Degree(-35));
 	}
 
 	if(map!=NULL){
 		tempNode = node->createChildSceneNode();
 		tempNode->attachObject(map);
-		tempNode->setScale(scale, scale, scale);
+		tempNode->yaw(Ogre::Degree(-45));
+        tempNode->pitch(Ogre::Degree(-35));
+		//tempNode->setScale(scale, scale, scale);
 	}
 	if(textMap!=NULL){
 		tempNode = node->createChildSceneNode();

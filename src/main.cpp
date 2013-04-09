@@ -128,13 +128,8 @@ bool init(OgreARAppLogic* owner)
 		std::stringstream tmpstr;
 		std::stringstream tmpstr2;
 
-
 		tmpstr << "surface"<<id;
 		card->surface = owner->mSceneMgr->createEntity(tmpstr.str(),"common/superficieretiro.mesh");
-
-		tmpstr.str("");
-		tmpstr << "textmap"<<id;
-		card->textMap = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasmapa.mesh");
 
 		tmpstr.str("");
 		tmpstr << "text3d"<<id;
@@ -145,13 +140,20 @@ bool init(OgreARAppLogic* owner)
 		card->textInfo = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasinfo.mesh");
 
 		if(card->hasMap){
+		
+            tmpstr.str("");
+		    tmpstr << "textmap"<<id;
+		    card->textMap = owner->mSceneMgr->createEntity(tmpstr.str(),"common/letrasmapa.mesh");
+
 			tmpstr.str("");
+			tmpstr2.str("");
 			tmpstr << "map"<<id;
-			tmpstr2 << name<<"/"<<name<<"_map.mesh";
-			card->surface = owner->mSceneMgr->createEntity(tmpstr.str(),tmpstr2.str());
+			tmpstr2 << name<<"/"<<name<<"_mapa.mesh";
+			card->map = owner->mSceneMgr->createEntity(tmpstr.str(),tmpstr2.str());
 		}
 
 		tmpstr.str("");
+		tmpstr2.str("");
 		tmpstr << "model"<<id;
 		tmpstr2 << name<<"/"<<name<<".mesh";
 		card->model = owner->mSceneMgr->createEntity(tmpstr.str(),tmpstr2.str());
@@ -159,6 +161,7 @@ bool init(OgreARAppLogic* owner)
 		//Assigning Ogrenode
 		card->node = owner->mSceneMgr->getRootSceneNode()->createChildSceneNode();
 		card->node->setScale(scale,scale,scale);
+		
 		card->attachObjects();
 		card->node->setVisible(false);
 
@@ -168,11 +171,13 @@ bool init(OgreARAppLogic* owner)
 		if(!soundMgr->loadAudio(tmpstr.str(), &card->soundInfoID, false)){
 			soundMgr->checkALError("load");
 		}
-		tmpstr.str("");
-		tmpstr << name<<"_mapa.ogg";
-		cout <<tmpstr.str();
-		if(!soundMgr->loadAudio(tmpstr.str(), &card->soundMapID, false)){
-			soundMgr->checkALError("load");
+		if(card->hasMap){
+			tmpstr.str("");
+			tmpstr << name<<"_mapa.ogg";
+			cout <<tmpstr.str();
+			if(!soundMgr->loadAudio(tmpstr.str(), &card->soundMapID, false)){
+				soundMgr->checkALError("load");
+			}
 		}
 
 	}
@@ -219,10 +224,14 @@ bool update(OgreARAppLogic* owner){
 			if(-0.79>yaw && yaw>-2.36){
 				//3d
 				cout << "3D!!!!" << endl;
+				if(card->hasMap){
+					card->model->setVisible(true);
+					card->map->setVisible(false);
+				}
 			}else if(2.36<yaw || yaw<-2.36){
 				//3D info
 				cout << "INFO!!!!" << endl;
-				if(card->map){
+				if(card->hasMap){
 					card->model->setVisible(true);
 					card->map->setVisible(false);
 				}
@@ -233,7 +242,7 @@ bool update(OgreARAppLogic* owner){
 				}
 			}else if(0.79<yaw && yaw<2.36){
 				//mapa
-				if(card->map){
+				if(card->hasMap){
 					card->map->setVisible(true);
 					card->model->setVisible(false);
 				}
