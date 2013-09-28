@@ -1,1 +1,13 @@
 Proyecto de Servicio Comunitario con Realidad Aumentada
+
+Para compilar el proyecto son necesarias las siguientes librerias:
+OpenCV
+OGRE*
+OIS*
+openal*
+aruco*
+ogg
+vorbis
+vorbisfile
+
+*Se encuentran en la carpeta lib, el resto fue obtenido de los repositorios de ubuntu  traves de apt-get
