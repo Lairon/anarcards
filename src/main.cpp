@@ -163,7 +163,7 @@ bool init(OgreARAppLogic* owner)
 		tmpstr.str("");
 		tmpstr2.str("");
 		tmpstr << "model"<<id;
-		tmpstr2 << name<<"/"<<name<<".mesh";
+	    tmpstr2 << name<<"/"<<name<<".mesh";
 		card->model = owner->mSceneMgr->createEntity(tmpstr.str(),tmpstr2.str());
 
 		//Assigning Ogrenode

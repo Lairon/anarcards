@@ -25,8 +25,8 @@ void Card::attachObjects(){
 	if(model!=NULL){ 
 		tempNode = node->createChildSceneNode();
 		tempNode->attachObject(model);
-		tempNode->yaw(Ogre::Degree(45));
-        tempNode->pitch(Ogre::Degree(-35));
+		tempNode->yaw(Ogre::Degree(-90));
+        //tempNode->pitch(Ogre::Degree(-35));
 	}
 
 	if(map!=NULL){
